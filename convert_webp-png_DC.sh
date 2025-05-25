@@ -15,7 +15,6 @@ convrt(){
 	dwebp "$1" -o "${1%.*}".png && rm "$1"
 }
 
-#пустой или нет аргумент
 if [ -z "$1" ]; then
     echo "Использование:"
     echo "$0 <путь_к_директории>"
@@ -27,9 +26,7 @@ elif [ -d "$1" ]; then
 	cd "$1"
 	for FILE in *.webp
 	do 
-		#dwebp "$FILE" -o "$FILE".png && rm "$FILE"
 		convrt "$FILE"
 	done
-	
 fi
 
