@@ -1,5 +1,22 @@
 #!/bin/bash
 
+<< 'MULTILINE-COMMENT'
+
+DOUBLECMD#TOOLBAR#XMLDATA<?xml version="1.0" encoding="UTF-8"?>
+<doublecmd>
+  <Program>
+    <Hint>compare_files_by_hash.sh LEFT_PANEL RIGHT_PANEL</Hint>
+    <Command>compare_files_by_hash.sh "%pl" "%pr"</Command>
+    <Params>%t1</Params>
+  </Program>
+</doublecmd>
+
+MULTILINE-COMMENT
+
+GREEN='\033[32m'	# зелёный цвет знаков
+LRED='\033[1;31m'
+NORMAL='\033[0m'	# Сброс цвета
+
 checkfile(){
 	if [ ! -f "$1" ]; then
 		echo "Файл $1 не существует."
@@ -31,21 +48,20 @@ elif [ "$#" -eq 0 ]; then
 	done
 fi
 
-hash1=$(md5sum "$FILE_1" | awk '{ print $1 }')
-hash2=$(md5sum "$FILE_2" | awk '{ print $1 }')
+HASH='sha512sum'
+hash1=$($HASH "$FILE_1" | awk '{ print $1 }')
+hash2=$($HASH "$FILE_2" | awk '{ print $1 }')
 
 echo -e "\n1.\n$FILE_1"
-echo md5sum:
+echo $HASH:
 echo $hash1
 
 echo -e "\n2.\n$FILE_2"
-echo md5sum:
+echo $HASH:
 echo -e "$hash2\n"
 
 if [ "$hash1" == "$hash2" ]; then
-#!	зеленым
-    echo "Файлы идентичны."
+	echo -e "${GREEN}Файлы идентичны.${NORMAL}"
 else
-#!	красным
-    echo "Файлы различаются."
+	echo -e "${LRED}Файлы различаются.${NORMAL}"
 fi
