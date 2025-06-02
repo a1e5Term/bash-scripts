@@ -34,10 +34,10 @@ while true; do
 	
 	while inotifywait -e modify /var/run/utmp >/dev/null 2>&1; do
 		#notify-send -u critical -t 3600000 "изменение количества пользователей"
-		zenity --info --text="modify /var/run/utmp"
 		echo $s. $(dt)
 		who_grep
+		zenity --info --text="modify /var/run/utmp"
 		echo
-		s=s+1
+		let s=s+1
 	done
 done
