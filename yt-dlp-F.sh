@@ -6,12 +6,28 @@ PATHSAVE="$HOME/.local/bin/yt-dlp"
 #Colours green, blue, yellow, lcyan, normal
 COLOURS=('\033[32m' '\033[01;34m' '\e[1;33m' '\033[1;36m' '\e[0m')
 
-function install (){
-	SOFT="ffmpeg"
-
+function install_soft (){
+	SOFT="$1"
 	if ! command -v "$SOFT" >/dev/null 2>&1 ; then
-		echo -e ${COLOURS[0]}установка ${SOFT}${COLOURS[4]}
-		su -c "apt install \"$SOFT\" -y" -
+		echo "Установить $SOFT? (y/n)"
+		read a
+		if [[ $a == "y" ]]; then
+			
+			echo -e ${COLOURS[0]}установка ${SOFT}${COLOURS[4]}
+			
+			if command -v apt &> /dev/null; then
+				su -c "apt install \"$SOFT\" -y" -
+				#sudo apt-get install "$SOFT"
+			elif command -v dnf &> /dev/null; then
+				sudo dnf install "$SOFT"
+			elif command -v brew &> /dev/null; then
+				brew install "$SOFT"
+			else
+				echo "Установщик пакетов не найден. Пожалуйста, установите \"$SOFT\" вручную."
+			fi
+		else
+			echo "Установка отменена."
+		fi
 	fi  
 }
 
@@ -22,50 +38,42 @@ function first () {
 	LIST=()
 	echo -e ${COLOURS[0]}вставить URL${COLOURS[4]}
 	read URL
+	#[[ -z $URL ]] && URL=""
 	echo
-	#URL=https://rutube.ru/video/9db722aaa25c825774bfe94da6a4fd04/
-	#LIST=$($PATHSAVE -F $URL | awk '/^-----------/{found=1; next} found')
+	
 
-	#HAT=$(yt-dlp -F https://rutube.ru/video/dd2592b46c214006056c3a4fc6cd0f08 | awk '/^ID/')
-	#echo -e "   $HAT"
+	if ! command -v fzf >/dev/null 2>&1 ; then
+		echo -e "$URL\n"
+		HAT=$(yt-dlp -F https://rutube.ru/video/dd2592b46c214006056c3a4fc6cd0f08 | awk '/^ID/')
+		echo -e "   $HAT"
+		$PATHSAVE -F $URL | awk '/^-----------/{found=1; next} found' > $FILE
+		second
+		tree
+	else
+		SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL")
+		PART=$(echo "$SELECT" | awk '{print $2}')
+	fi
 
-	#$PATHSAVE -F $URL | awk '/^-----------/{found=1; next} found' > $FILE
-	#HAT=$(yt-dlp -F https://rutube.ru/video/dd2592b46c214006056c3a4fc6cd0f08 | awk '/^ID/')
 	#$PATHSAVE -F $URL | awk 'NR>=7'
-	SELECT=$($PATHSAVE -F $URL | awk 'NR>=7' | fzf --reverse --header-lines=2)
-	#cat $FILE
+	#SELECT=$($PATHSAVE -F $URL | awk 'NR>=7' | nl | fzf --reverse --header-lines=2 --header="$URL")
+	#SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-2, $0}' | fzf --reverse --header-lines=2 --header="$URL")
 }
 
 function second () {
-	#exit
-	count=1  # Счетчик
+	count=1
 	IFS=$'\n'
-	#read -ra itemArray <<< "$LIST"  # Читаем строку в массив
-	#cat $FILE
-	# Читаем файл в массив
-	#readarray -t itemArray < $FILE
-	
-	itemArray=()  # Инициализируем массив
+
+	itemArray=()
 
 	for item in $(cat $FILE); do
-	#for item in $itemArray ; do
-		#echo second
-
-	#for var in $(cat $file)
-
-	#for item in "${itemArray[@]}" ; do
 		echo -e "${COLOURS[2]}$count. ${COLOURS[4]}$item"  # Выводим номер и элемент
-		#echo "$item"
+
 		itemArray+=("$item")  # Добавляем каждую строку в массив
 
 		((count++))  # Увеличиваем счетчик
 	done
-	echo
 
-	## Выводим элементы массива
-	#for item in "${itemArray[@]}"; do
-		#echo "$item"
-	#done
+	echo
 }
 
 function tree ()
@@ -75,23 +83,18 @@ function tree ()
 	PART=$(echo "${itemArray[$a]}" | awk '{print $1}')
 }
 
-function four ()
-{
-	#echo $PART
+function four (){
 	$PATHSAVE -f $PART -o "$HOME/Videos/%(title)s.%(ext)s" $URL
 }
 
 function main (){
-	install
+	
+	install_soft "ffmpeg"
+	install_soft "fzf"
+	
 	first
-	#second
-	tree
 	four
 	rm $FILE
 }
-
-#не рб
-#curl -L $URL -o $PATHSAVE/yt-dlp
-#chmod a+rx $PATHSAVE/yt-dlp
 
 main
