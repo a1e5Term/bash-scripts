@@ -38,7 +38,7 @@ function first () {
 	LIST=()
 	echo -e ${COLOURS[0]}вставить URL${COLOURS[4]}
 	read URL
-	#[[ -z $URL ]] && URL=""
+	[[ -z $URL ]] && URL="https://rutube.ru/video/5ddfd6209b1528f02c5cf91c37408dec/"
 	echo
 	
 
@@ -50,7 +50,11 @@ function first () {
 		second
 		tree
 	else
-		SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL")
+		#SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL" --no-info)
+		#SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL"$'\n'' ' --no-info)
+		TITLE=$(yt-dlp --get-title $URL)
+		SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$(printf "\n%s\n%s\n " "$URL" "$TITLE")" --no-info)
+
 		PART=$(echo "$SELECT" | awk '{print $2}')
 	fi
 
