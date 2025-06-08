@@ -2,10 +2,10 @@
 
 SOFT='webp'
 
-if [ ! command -v "$SOFT" >/dev/null 2>&1 ] ; then
+if ! command -v "$SOFT" >/dev/null 2>&1 ; then
 	echo Install "$SOFT"
 	sudo apt install webp
-	if [ ! command -v "$SOFT" >/dev/null 2>&1 ] ; then
+	if ! command -v "$SOFT" >/dev/null 2>&1 ; then
 		exit 0
 	fi
 fi   
