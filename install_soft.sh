@@ -1,7 +1,6 @@
 #!/bin/bash
 
-function layout_us ()
-{
+function layout_us (){
 	setxkbmap -layout us
 }
 
@@ -28,25 +27,43 @@ find_correct_word() {
 
     # Выводим предложения в fzf
     if [ ${#suggestions[@]} -gt 0 ]; then
-        SELECT_SOFT=$(echo "${suggestions[@]}" | tr ' ' '\n' | fzf)
+        SOFT=$(printf "%s\n" "${suggestions[@]}" | fzf --header="Возможно вы имели ввиду:" --reverse --no-info --preview 'apt-cache search {+1} | grep -w {+1}')
+        #apt-cache search "$SOFT" | grep -w "$SOFT"
+        #SELECT_SOFT=$(echo "${suggestions[@]}" | tr ' ' '\n' | fzf)
+        #tr ' ' '\n': Команда tr (translate) заменяет символы. В данном случае она заменяет все пробелы (' ') на символы новой строки ('\n').
     else
         echo "Нет предложений."
     fi
+}
 
+func_install(){
+	echo -e "\n$SOFT"
+	
+	apt-cache search "$SOFT" | grep -w "$SOFT"
+	#apt search --names-only "$SOFT" | grep -w "$SOFT"
+
+	echo -e "\napt install $SOFT"			#лишн кав были тут
+
+	su -c "apt install \"$SOFT\" -y" -
+
+	setxkbmap -model pc105 -layout us,ru -option grp:alt_shift_toggle
+	exit
 }
 
 echo "Введите название программы для установки"
 layout_us
 read SOFT
 echo "$SOFT" | tr '[:upper:]' '[:lower:]' > /dev/null
+#SOFT_ORIG="$SOFT"
 
 dictionary=($(apt-cache pkgnames))
+
+for word in "${dictionary[@]}"; do
+	if [ "${word}" == "${SOFT}" ]; then
+		func_install
+	fi
+done
+
 find_correct_word "$SOFT" "${dictionary[@]}"
-echo
-apt-cache search "$SELECT_SOFT"
 
-echo -e "\napt install $SELECT_SOFT"			#лишн кав были тут
-
-su -c "apt install \"$SELECT_SOFT\" -y" -
-
-setxkbmap -model pc105 -layout us,ru -option grp:alt_shift_toggle
+func_install
