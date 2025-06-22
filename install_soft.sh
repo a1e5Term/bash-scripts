@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#если давно обновлялись
-#sudo apt update
+#Colours green, blue, yellow, lcyan, normal
+#export COLOURS=('\033[32m' '\033[01;34m' '\e[1;33m' '\033[1;36m' '\e[0m')
+
 
 function layout_us (){
 	setxkbmap -layout us
@@ -28,48 +29,52 @@ find_correct_word() {
         fi
     done
 
-    # Выводим предложения в fzf
+    # 
     if [ ${#suggestions[@]} -gt 0 ]; then
-        #SOFT=$(printf "%s\n" "${suggestions[@]}" | fzf --header="Возможно вы имели ввиду:" --reverse --no-info --preview 'apt-cache search {+1} | grep -w {+1}')
-        
-        #SOFT=$(printf "%s\n" "${suggestions[@]}" | fzf --header="Возможно вы имели ввиду:" --reverse --no-info --preview 'apt-cache show {} | grep -w {}')
-        
-        SOFT=$(printf "%s\n" "${suggestions[@]}" | fzf --header="Возможно вы имели ввиду:" --reverse --no-info --preview 'apt-cache show {}')
-        
-        #apt-cache search "$SOFT" | grep -w "$SOFT"
-        #SELECT_SOFT=$(echo "${suggestions[@]}" | tr ' ' '\n' | fzf)
-        #tr ' ' '\n': Команда tr (translate) заменяет символы. В данном случае она заменяет все пробелы (' ') на символы новой строки ('\n').
+		SOFT=$(printf "%s\n" "${suggestions[@]}" | fzf --header="Возможно вы имели ввиду:" --reverse --no-info --preview 'bash -c "func2 {}"')
     else
         echo "Нет предложений."
     fi
 }
 
+f_translate(){
+	b1=$(echo "$1" | sed 's/[[:cntrl:]]//g')
+	b2=$(echo "$1" | tr -d '\t\n')
+
+	w=60
+	b3=$(echo "$b2" | fmt -w $w )
+
+	echo "$(trans :ru -no-auto -b "$b3")"
+}
+export -f f_translate
+
+func2(){
+	a0=$(apt-cache show $(echo "$1" | awk '{print $1}'))					#получаем первое слово
+    a1=$(echo "$a0" | sed '/^.\{,2\}\.$/d')									#удалить строки больше 3 символов содержащие точку
+	a2=$(echo "$a1" | awk '!seen[$0]++')									#удалить дубликаты строк
+	a3=$(echo "$a2" | awk '/^Description/{print ""; print; next} {print}')
+	a4=$(echo "$a3" | awk '/^Description-md5:/{print ""; print; next} 1')
+	echo "$a4"
+	echo
+	COLOURS=('\033[32m' '\033[01;34m' '\e[1;33m' '\033[1;36m' '\e[0m')
+	echo -e "${COLOURS[0]}"Перевод"${COLOURS[4]}"
+	a5=$(echo "$a4" | sed -n '/^Description/,/^Description-md5:/p')
+	a6=$(echo "$a5" | sed '/Description-md5/d')
+	a7=$(f_translate "$a6")
+	echo "$a7"
+}
+export -f func2
+
 func_install(){
-	#echo -e "\n$SOFT"
-	
-	apt-cache search "$SOFT" | grep -w "$SOFT"
-	#apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview 'apt-cache show {} | awk "{print $1}"'
-	#apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview 'apt-cache show {} | awk "{print $1}"'
-	
-	#apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview '{} | awk "{print \$1}" | apt-cache show -'
-
-
+	apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview 'bash -c "func2 {}"'
+	#тут пароль не просит (apt show) а обычно просит
 	#apt search --names-only "$SOFT" | grep -w "$SOFT"
 	#aptitude search "~n$SOFT"
 	#aptitude search "~n$SOFT" | awk '{print $3}'
 	#dictionary=($(apt-cache pkgnames))
 
-    local arrey=()
-    local arrey2=()
-
-		#в массив
-			#второй столбец если описание есть
-			
-		#В другой массим
-			#второй столбец если описание нет
 	echo
-	#apt-cache show $SOFT
-	echo -e "\napt install $SOFT"			#лишн кав были тут
+	echo -e "\napt install $SOFT"			#лишн кавычки были тут
 	su -c "apt install \"$SOFT\" -y" -
 
 	setxkbmap -model pc105 -layout us,ru -option grp:alt_shift_toggle
@@ -77,14 +82,12 @@ func_install(){
 }
 
 echo "Введите название программы для установки"
-layout_us
+#layout_us
 read SOFT
-clear
-echo "$SOFT" | tr '[:upper:]' '[:lower:]' > /dev/null
-#SOFT_ORIG="$SOFT"
-
+SOFT=$(echo "$SOFT" | tr '[:upper:]' '[:lower:]')	# > /dev/null
 dictionary=($(apt-cache pkgnames))
 
+# проверяем есть ли введеная пользователем программа в списке пакетов. если есть вызваем установку
 for word in "${dictionary[@]}"; do
 	if [ "${word}" == "${SOFT}" ]; then
 		func_install
@@ -92,5 +95,5 @@ for word in "${dictionary[@]}"; do
 done
 
 find_correct_word "$SOFT" "${dictionary[@]}"
-
 func_install
+
