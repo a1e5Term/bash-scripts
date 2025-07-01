@@ -36,22 +36,24 @@ function first () {
 	[[ ! -x $PATHSAVE ]] &&	su -c "chmod a+rx \"$PATHSAVE\"" -
 
 	LIST=()
-	echo -e ${COLOURS[0]}вставить URL${COLOURS[4]}
+	echo -e ${COLOURS[0]}вставить URL:${COLOURS[4]}
 	read URL
-	[[ -z $URL ]] && URL="https://rutube.ru/video/5ddfd6209b1528f02c5cf91c37408dec/"
+	[[ -z $URL ]] && URL=""
+	clear
+	echo -e ${COLOURS[0]}URL:${COLOURS[4]}
+	echo $URL
+	
 	echo
 	
 
 	if ! command -v fzf >/dev/null 2>&1 ; then
 		echo -e "$URL\n"
-		HAT=$(yt-dlp -F https://rutube.ru/video/dd2592b46c214006056c3a4fc6cd0f08 | awk '/^ID/')
+		HAT=$(yt-dlp -F $URL | awk '/^ID/')
 		echo -e "   $HAT"
 		$PATHSAVE -F $URL | awk '/^-----------/{found=1; next} found' > $FILE
 		second
 		tree
 	else
-		#SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL" --no-info)
-		#SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$URL"$'\n'' ' --no-info)
 		TITLE=$(yt-dlp --get-title $URL)
 		SELECT=$($PATHSAVE -F $URL | awk 'NR==7 {print; next} NR==8 {print; next} NR>8 {print NR-8, $0}' | fzf --reverse --header-lines=2 --header="$(printf "\n%s\n%s\n " "$URL" "$TITLE")" --no-info)
 
@@ -98,7 +100,7 @@ function main (){
 	
 	first
 	four
-	rm $FILE
+	#rm $FILE
 }
 
 main

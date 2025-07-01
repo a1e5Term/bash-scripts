@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#https://github.com/dylanaraps/pash
+
 export PATH="$HOME/.local/bin:$PATH"
 
 commands=("pash help"  \

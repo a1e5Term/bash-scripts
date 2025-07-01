@@ -66,14 +66,31 @@ func2(){
 export -f func2
 
 func_install(){
-	apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview 'bash -c "func2 {}"'
+	clear 
+	#apt-cache search "$SOFT" | grep -w "$SOFT" | fzf --reverse --no-info --preview 'bash -c "func2 {}"'
+	
+	# Выполняем поиск и сохраняем результат
+	RESULT=$(apt-cache search "$SOFT" | grep -w "$SOFT")
+
+	# Проверяем количество найденных строк
+	if [ -z "$RESULT" ]; then
+		#если слово целиком не найдено, то ищем без "grep -w"
+		apt-cache search "$SOFT" | fzf --reverse --no-info --preview 'bash -c "func2 {}"'
+	else
+		echo "$RESULT" | fzf --reverse --no-info --preview 'bash -c "func2 {}"'
+	fi
+	
 	#тут пароль не просит (apt show) а обычно просит
 	#apt search --names-only "$SOFT" | grep -w "$SOFT"
 	#aptitude search "~n$SOFT"
 	#aptitude search "~n$SOFT" | awk '{print $3}'
 	#dictionary=($(apt-cache pkgnames))
 
-	echo
+#если нет предложений то не устанавливать ничего
+
+	echo -e "Установка"
+
+	#echo
 	echo -e "\napt install $SOFT"			#лишн кавычки были тут
 	su -c "apt install \"$SOFT\" -y" -
 
@@ -81,19 +98,24 @@ func_install(){
 	exit
 }
 
-echo "Введите название программы для установки"
-#layout_us
-read SOFT
-SOFT=$(echo "$SOFT" | tr '[:upper:]' '[:lower:]')	# > /dev/null
-dictionary=($(apt-cache pkgnames))
+main(){
+	echo "Введите название программы для установки"
+	#layout_us
+	read SOFT
+	SOFT=$(echo "$SOFT" | tr '[:upper:]' '[:lower:]')	# > /dev/null
+	dictionary=($(apt-cache pkgnames))
 
-# проверяем есть ли введеная пользователем программа в списке пакетов. если есть вызваем установку
-for word in "${dictionary[@]}"; do
-	if [ "${word}" == "${SOFT}" ]; then
-		func_install
-	fi
-done
+	# проверяем есть ли введеная пользователем программа в списке пакетов. если есть вызваем установку
+	for word in "${dictionary[@]}"; do
+		if [ "${word}" == "${SOFT}" ]; then
+			func_install
+		fi
+	done
 
-find_correct_word "$SOFT" "${dictionary[@]}"
-func_install
+	find_correct_word "$SOFT" "${dictionary[@]}"
+	func_install
 
+}
+
+#main "$@"
+main

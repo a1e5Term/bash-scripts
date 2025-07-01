@@ -1,5 +1,13 @@
 #!/bin/bash
+
+XDG_DOCUMENTS_DIR=${XDG_DOCUMENTS_DIR:=${HOME}/Documents}
+	#Если XDG_DOCUMENTS_DIR уже имеет значение, оно останется неизменным. Если же оно пустое или не задано, переменной будет присвоено значение ${HOME}/Documents.
+
+#папка по умолчанию для сохрнаниения скриптов
+PTH="$XDG_DOCUMENTS_DIR/LEARN_05_python/scripts_python"
+
 clear
+
 # =============================================
 
 # 1. автоматически проверит существование файла сохранения скриптов
@@ -56,7 +64,7 @@ if command -v xclip &> /dev/null; then
 	#xclip -o > $tmppth >/dev/null 2>&1
 	xclip -o > $tmppth
 	#echo "xclip"
-elif [[ "$ID" == "gentoo" ]]; then
+elif [ "$ID" == "gentoo" ]; then
 	qdbus org.kde.klipper /klipper getClipboardContents > $tmppth
 	#echo "qdbus"
 fi
@@ -89,39 +97,42 @@ echo -e "${GREEN}Выберети ЯП:${NORMAL}"
 echo "1 - sh"
 echo "2 - py"
 #-i значение по умолчанию
-read -e -i 1 Lang
+read -e -i 1 LANG
 
-case $Lang in
+case $LANG in
 	1)
-	ext='sh'
-	#нужно проверять пути
-	PATH_BASH="$HOME/Documents/LEARN_04_IT_LINUX/LINUX/scripts_bash"
-	if [[ -d "$PATH_BASH" ]]; then
-		PATH_SAVE="$PATH_BASH"
-	else
-		echo
-		echo -e "${RED}Не найден путь: $PATH_BASH"
-		PATH_SAVE=$(find $HOME -type d -name "scripts_bash" -print -quit)
-		echo PATH_SAVE= $PATH_SAVE
-	fi
-	
-	firstString='#!/bin/bash'
-	#trigger=1
-	;;
+		ext='sh'
+		#нужно проверять пути
+		PATH_BASH="$HOME/Documents/LEARN_04_IT_LINUX/LINUX/scripts_bash"
+		if [[ -d "$PATH_BASH" ]]; then
+			PATH_SAVE="$PATH_BASH"
+		else
+			echo
+			echo -e "${RED}Не найден путь: $PATH_BASH"
+			PATH_SAVE=$(find $HOME -type d -name "scripts_bash" -print -quit)
+			echo PATH_SAVE= $PATH_SAVE
+		fi
+		
+		firstString='#!/bin/bash'
+		#trigger=1
+		;;
 	2)
-	ext='py'
+		ext='py'
+        
+        
+        
 
-	if [[ -d "$XDG_DOCUMENTS_DIR/LEARN_WORK/05_python/scripts_python" ]]; then
-		PATH_SAVE="$XDG_DOCUMENTS_DIR/LEARN_WORK/05_python/scripts_python"
-	else
-		echo
-		echo -e "${RED}Не найден путь: $XDG_DOCUMENTS_DIR/LEARN_WORK/05_python/scripts_python ${NORMAL}"
-		PATH_SAVE=$(find $HOME -type d -name "scripts_python" -print -quit)
-	fi
-	
-#firstString='#!/usr/bin/env python'	не рб при запуске из терминала
-	firstString='#!/usr/bin/python3'
-	;;
+		if [[ -d "$PTH" ]]; then
+			PATH_SAVE="$PTH"
+		else
+			echo
+			echo -e "${RED}Не найден путь: $PTH ${NORMAL}"
+			PATH_SAVE=$(find $HOME -type d -name "scripts_python" -print -quit)
+		fi
+		
+		#firstString='#!/usr/bin/env python'	не рб при запуске из терминала
+		firstString='#!/usr/bin/python3'
+		;;
 esac
 
 # ------------------------------------------------------------------------
