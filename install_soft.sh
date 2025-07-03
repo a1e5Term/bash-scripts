@@ -98,7 +98,60 @@ func_install(){
 	exit
 }
 
+create_config (){
+# Создание файла конфигурации
+cat <<EOL > "$CONFIG_FILE"
+# Файл конфигурации для $SCRIPT_NAME
+S_DATE=$(date +"%Y.%m.%d")
+EOL
+}
+
+check_update(){
+	# Определяем имя скрипта и путь к файлу конфигурации
+	SCRIPT_NAME=$(basename "$0" .sh)
+	CONFIG_DIR="$HOME/.config"
+	CONFIG_FILE="$CONFIG_DIR/${SCRIPT_NAME}.cfg"
+
+	# Создаем директорию .config, если она не существует
+	mkdir -p "$CONFIG_DIR"
+
+	# Считывание файла конфигурации
+	if [ -f "$CONFIG_FILE" ]; then
+		# Используем source для загрузки переменных из файла
+		source "$CONFIG_FILE"
+
+	else
+		create_config
+	fi
+
+	# Получаем текущую дату в формате год.месяц.дата
+	CURRENT_DATE=$(date +"%Y.%m.%d")
+
+	# Проверяем, не пусто ли S_DATE
+	if [ -n "$S_DATE" ]; then
+		# Сравниваем S_DATE с текущей датой
+		if [ "$S_DATE" != "$CURRENT_DATE" ]; then
+			#echo "Даты не совпадают"
+			sudo apt update
+			#echo sudo apt update
+			sed -i "s/^S_DATE=.*/S_DATE=$CURRENT_DATE/" "$CONFIG_FILE"
+				#sed -i — редактирует файл на месте.
+				#s/^S_DATE=.*/S_DATE=$CURRENT_DATE/ — это команда замены:
+					#^S_DATE= — ищет строку, начинающуюся с S_DATE=.
+					#.* — соответствует любому значению после S_DATE=.
+					#S_DATE=$CURRENT_DATE — заменяет найденную строку на S_DATE= с текущей датой.
+
+		fi
+	fi	
+	
+}
+
 main(){
+	check_update
+
+#exit
+
+	
 	echo "Введите название программы для установки"
 	#layout_us
 	read SOFT
