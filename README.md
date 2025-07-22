@@ -12,12 +12,13 @@
 ## Discription
 
 ### yt-dlp-F.sh
-TUI for yt-dlp
+TUI for yt-dlp.
+
 
 ### install_soft.sh
-fzf backend for 
-для быстрого и удобного просмотра и установки пакетов на основе apt.
-Переводит описание пакета на язык системы.
+fzf backend for apt.
+Для быстрой и удобной установки пакетов с просмотром описания, на основе apt.
+
 
 ## Usage
 
