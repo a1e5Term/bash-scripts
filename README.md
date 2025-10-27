@@ -8,7 +8,6 @@
 </div>
 
 ---
-
 ## Discription
 
 ### yt-dlp-F.sh
@@ -19,11 +18,21 @@ TUI for yt-dlp.
 fzf backend for apt.
 Для быстрой и удобной установки пакетов с просмотром описания, на основе apt.
 
+### check_access_rights_gnupg.sh
 
-## Usage
+This script is designed to check and modify the access rights for the `~/.gnupg` directory and its contents. The correct access rights for the directory and files are as follows:
+- `~/.gnupg` - **700**
+- Subdirectories - **700**
+- Files - **600**
+
+```bash
+chmod +x check_access_rights_gnupg.sh
+./check_access_rights_gnupg.sh
+```
 
 
 ## Install
 ```Bash
-
+git clone https://github.com/a1e5Term/bash-scripts
+cd bash-scripts
 ```
